@@ -24,3 +24,5 @@ binary_sensor:
 packages:
   base: !include
     file: ./.status-led.yaml
+    vars:
+      status_led_switch: relay

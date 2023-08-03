@@ -6,6 +6,7 @@ substitutions:
   status_led_output_platform: esp8266_pwm
   status_led_output_pin: GPIO13
   status_led_output_inverted: "True"
+  status_led_switch: no_switch
 
 output:
   - id: status_led
@@ -28,32 +29,72 @@ light:
           transition_length: 1s
           update_interval: 2s
 
-interval:
-  - interval: 1s
+esphome:
+  on_loop:
     then:
       - if:
           condition:
             and:
-              - switch.is_off: locate
               - not: wifi.connected
-              - light.is_off: status_light
+              - switch.is_off: scanning
           then:
-            - light.turn_on: 
-                id: status_light
-                effect: Scan
+            - switch.turn_on: scanning
 
       - if:
           condition:
             and:
-              - switch.is_off: locate
               - wifi.connected
-              - light.is_on: status_light
+              - switch.is_on: scanning
           then:
-            - light.turn_off: 
-                id: status_light
-                transition_length: 0s    # Avoid eternal "turning off loop"
+            - switch.turn_off: scanning
+
+      - if:
+          condition:
+            and:
+            - switch.is_off: scanning
+            - switch.is_off: locate
+          then:
+          - if:
+              condition:
+                switch.is_on: ${status_led_switch}
+              then:
+                - if:
+                    condition:
+                      light.is_off: status_light
+                    then:
+                      - light.turn_on:
+                          id: status_light
+                          transition_length: 0s
+              else:
+                - if:
+                    condition:
+                      light.is_on: status_light
+                    then:
+                      - light.turn_off:
+                          id: status_light
+                          transition_length: 0s
 
 switch:
+  - id: no_switch    # Dummy switch to make compiler happy.
+    platform: template
+    internal: True
+    optimistic: True
+
+  - id: scanning
+    platform: template
+    internal: True
+    optimistic: True
+
+    on_turn_on:
+      - light.turn_on: 
+          id: status_light
+          effect: Scan
+
+    on_turn_off:
+      - light.turn_off: 
+          id: status_light
+          transition_length: 0s
+
   - name: Locate
     id: locate
     platform: template
@@ -68,3 +109,4 @@ switch:
     on_turn_off:
       - light.turn_off: 
           id: status_light
+          transition_length: 0s
