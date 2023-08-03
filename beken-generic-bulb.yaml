@@ -1,0 +1,51 @@
+#
+# Device-specific: Beken Generic "9W" RGBCW light bulb
+# 
+# Source: https://www.elektroda.com/rtvforum/topic3930622.html
+#         https://www.elektroda.com/rtvforum/topic3941220.html
+#
+# Original Tuya Module Version: 1.3.21 - BK7231N / oem_bk7231n_light_ty
+# 
+
+bk72xx:
+  board: cb2l    # https://developer.tuya.com/en/docs/iot/cb2l-module-datasheet?id=Kai2eku1m3pyl
+  framework:
+    version: dev
+
+web_server:
+
+output:
+  - platform: ledc
+    id: red_output
+    pin: P8
+
+  - platform: ledc
+    id: green_output
+    pin: P7
+
+  - platform: ledc
+    id: blue_output
+    pin: P6
+
+  - platform: ledc
+    id: warm_white_output
+    pin: P24
+
+  - platform: ledc
+    id: cold_white_output
+    pin: P26
+
+light:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/light/index.html#base-light-configuration
+    platform: rgbww
+    restore_mode: RESTORE_DEFAULT_ON
+
+    red: red_output
+    green: green_output
+    blue: blue_output
+    warm_white: warm_white_output
+    cold_white: cold_white_output
+    gamma_correct: 3.0
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    color_interlock: True

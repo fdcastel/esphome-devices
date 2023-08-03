@@ -1,0 +1,54 @@
+#
+# Device-specific: Athom E27 7W Bulb (RGBWW)
+#
+# Source: https://github.com/athom-tech/athom-configs/blob/main/athom-rgbww-light.yaml
+#
+
+esp8266:
+  board: esp8285
+  restore_from_flash: True
+
+output:
+  - platform: esp8266_pwm
+    id: red_output
+    pin: GPIO4
+    min_power: 0.000499
+    max_power: 1
+
+  - platform: esp8266_pwm
+    id: green_output
+    pin: GPIO12
+    min_power: 0.000499
+    max_power: 1
+
+  - platform: esp8266_pwm
+    id: blue_output
+    pin: GPIO14
+    min_power: 0.000499
+    max_power: 1
+
+  - platform: esp8266_pwm
+    id: warm_white_output
+    pin: GPIO13
+    min_power: 0.000499
+    max_power: 1
+
+  - platform: esp8266_pwm
+    id: cold_white_output
+    pin: GPIO5
+    min_power: 0.000499
+    max_power: 1
+
+light:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/light/index.html#base-light-configuration
+    platform: rgbww
+    restore_mode: RESTORE_DEFAULT_ON
+
+    red: red_output
+    green: green_output
+    blue: blue_output
+    warm_white: warm_white_output
+    cold_white: cold_white_output
+    cold_white_color_temperature: 6000 K
+    warm_white_color_temperature: 3000 K
+    color_interlock: True

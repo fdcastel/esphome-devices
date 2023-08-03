@@ -1,0 +1,69 @@
+#
+# Device-specific: Sonoff Pow R2
+#
+
+esp8266:
+  board: esp01_1m
+
+switch:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
+    id: relay
+    platform: gpio
+    pin: GPIO12
+
+binary_sensor:
+  - name: Button
+    platform: gpio
+    pin: 
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - switch.toggle: relay
+
+# Required for total_daily_energy
+time:
+  - platform: homeassistant
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+
+logger:
+  baud_rate: 0    # Disables logging over serial port (UART using it).
+
+sensor:
+  - platform: cse7766
+    update_interval: 1s
+
+    current:
+      name: Current
+      id: current
+      accuracy_decimals: 3
+      on_value_range:
+        - above: 8
+          then:
+            - logger.log:
+                format: "Overcurrent detected (%.1f A). Turning off relay."
+                args: 'id(current).state'
+                level: WARN
+            - switch.turn_off: relay
+
+    voltage:
+      name: Voltage
+      id: voltage
+
+    power:
+      name: Power
+      id: power
+
+  - platform: total_daily_energy
+    name: Total Daily Energy
+    power_id: power
+    filters:
+        - multiply: 0.001
+    unit_of_measurement: kWh
+
+packages:
+  base: !include
+    file: ./.status-led.yaml

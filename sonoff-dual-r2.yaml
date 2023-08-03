@@ -1,0 +1,50 @@
+#
+# Device-specific: Sonoff Dual R2
+#
+
+esp8266:
+  board: esp01_1m
+
+switch:
+  - name: Relay 1
+    id: relay1
+    platform: gpio
+    pin: GPIO12
+
+  - name: Relay 2
+    id: relay2
+    platform: gpio
+    pin: GPIO05
+
+binary_sensor:
+  - name: Button
+    platform: gpio
+    pin:
+      number: GPIO10
+      mode: INPUT_PULLUP
+      inverted: True
+
+    on_click:
+      # Short press: toggle relay1
+      - min_length: 350ms
+        max_length: 700ms
+        then:
+          - switch.toggle: relay1
+
+      # Long press: toggle both relays
+      - min_length: 1000ms
+        max_length: 3000ms
+        then:
+          - switch.toggle: relay1
+          - switch.toggle: relay2
+          
+    on_double_click:
+      # Double short press: toggle relay2
+      - min_length: 50ms
+        max_length: 350ms
+        then:
+          - switch.toggle: relay2
+
+packages:
+  base: !include
+    file: ./.status-led.yaml

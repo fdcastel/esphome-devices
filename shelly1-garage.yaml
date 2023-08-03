@@ -1,0 +1,27 @@
+#
+# Device-specific: Shelly 1 (for garage doors)
+#
+
+esp8266:
+  board: esp01_1m
+
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: command
+
+button:
+  - platform: output
+    name: Command
+    output: command
+    duration: 1000ms
+    icon: mdi:remote
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO5
+    id: state
+    name: State
+    device_class: garage_door
+    filters:
+      - invert:

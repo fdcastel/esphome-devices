@@ -1,0 +1,57 @@
+#
+# Common configuration for all devices.
+#
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+
+# WiFi configuration
+wifi:
+  domain: !secret wifi_domain
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    password: !secret ota_password
+
+captive_portal:
+
+
+# Enable logger
+logger:
+
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+
+# Enable OTA updates
+ota:
+  password: !secret ota_password
+
+
+# Common sensors
+sensor:
+  - name: Uptime
+    platform: uptime
+    update_interval: 120s
+
+  - name: Wifi Signal
+    platform: wifi_signal
+    update_interval: 120s
+
+text_sensor:
+  - name: Version
+    platform: version
+    hide_timestamp: True
+
+
+# Restart button
+button:
+  - name: Restart
+    platform: restart

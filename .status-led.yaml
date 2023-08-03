@@ -1,0 +1,70 @@
+#
+# Custom status led and "Locate" switch.
+#
+
+substitutions:
+  status_led_output_platform: esp8266_pwm
+  status_led_output_pin: GPIO13
+  status_led_output_inverted: "True"
+
+output:
+  - id: status_led
+    platform: ${status_led_output_platform}
+    pin: ${status_led_output_pin}
+    inverted: ${status_led_output_inverted}
+
+light:
+  - id: status_light
+    platform: monochromatic
+    output: status_led
+    internal: True
+    effects:
+      - pulse:
+          name: Scan
+          transition_length: 200ms
+          update_interval: 400ms
+      - pulse:
+          name: Locate
+          transition_length: 1s
+          update_interval: 2s
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            and:
+              - switch.is_off: locate
+              - not: wifi.connected
+              - light.is_off: status_light
+          then:
+            - light.turn_on: 
+                id: status_light
+                effect: Scan
+
+      - if:
+          condition:
+            and:
+              - switch.is_off: locate
+              - wifi.connected
+              - light.is_on: status_light
+          then:
+            - light.turn_off: 
+                id: status_light
+                transition_length: 0s    # Avoid eternal "turning off loop"
+
+switch:
+  - name: Locate
+    id: locate
+    platform: template
+    icon: mdi:home-search
+    optimistic: True
+
+    on_turn_on:
+      - light.turn_on: 
+          id: status_light
+          effect: Locate
+
+    on_turn_off:
+      - light.turn_off: 
+          id: status_light

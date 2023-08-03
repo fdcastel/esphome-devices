@@ -1,0 +1,98 @@
+#
+# Device-specific: Sonoff Zigbee Bridge PRO
+#
+# Source: https://github.com/Giancky79/ZB-Bridge-P
+#         https://templates.blakadder.com/sonoff_ZBBridge-P.html
+#
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+esphome:
+  on_boot:
+    priority: 800
+    then:
+      - rtttl.play: two_short:d=4,o=5,b=100:16e6,16e6
+
+web_server:
+
+logger:
+  baud_rate: 0
+
+output:
+  - id: status_bls
+    platform: gpio
+    pin: GPIO21    # Green led
+    inverted: True    
+
+  - id: rtttl_out 
+    platform: ledc
+    pin: GPIO4    # Buzzer
+
+light:
+  - id: green
+    platform: binary
+    output: status_bls
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+rtttl:
+  output: rtttl_out
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO23
+  baud_rate: 115200  
+
+stream_server:
+  port: 8888
+  uart_id: uart_bus
+
+external_components:
+  - source: github://oxan/esphome-stream-server
+
+binary_sensor:
+  - platform: status
+    name: Status
+
+  - platform: stream_server
+    connected:
+      name: Connected
+
+sensor:
+  - platform: stream_server
+    connection_count:
+      name: Connections
+
+switch:
+  - platform: gpio
+    id: zigbee_rst
+    pin: 15
+    name: Zigbee RST
+    inverted: True
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    id: zigbee_bsl
+    pin: 22
+    name: Zigbee BSL
+    inverted: False
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+# esp32_ble_tracker:
+
+# text_sensor:
+#   - platform: ble_scanner
+#     name: BLE Devices
+
+packages:
+  base: !include
+    file: ./.status-led.yaml
+    vars:
+      status_led_output_platform: ledc
+      status_led_output_pin: GPIO2

@@ -1,0 +1,26 @@
+#
+# Device-specific: Sonoff Basic, Sonoff Basic R3
+#
+
+esp8266:
+  board: esp01_1m
+
+switch:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
+    id: relay
+    platform: gpio
+    pin: GPIO12
+
+binary_sensor:
+  - name: Button
+    platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      - switch.toggle: relay
+
+packages:
+  base: !include
+    file: ./.status-led.yaml

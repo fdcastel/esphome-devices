@@ -1,0 +1,124 @@
+#
+# Device-specific: Shelly Plus 1PM
+#
+
+substitutions:
+  current_res: "0.001"    # Higher value gives lower watt readout
+  voltage_div: "1925"     # Lower value gives lower voltage readout
+
+esphome:
+  platformio_options:
+    board_build.f_cpu: 160000000L
+    
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_160: y
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ: "160"
+
+switch:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
+    id: relay
+    platform: gpio
+    pin: GPIO26
+
+binary_sensor:
+  - name: Button
+    platform: gpio
+    pin: 
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - switch.toggle: relay
+
+  - name: Switch
+    platform: gpio
+    pin: GPIO04
+    filters:
+      - delayed_on_off: 50ms
+    on_state:
+      - switch.toggle: relay
+
+# Required for total_daily_energy
+time:
+  - platform: homeassistant
+
+sensor:
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: Temperature
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+    on_value_range:
+      - above: 80
+        then:
+          - switch.turn_off: relay
+
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+
+  - platform: adc
+    id: temp_analog_reading
+    pin: GPIO32
+    attenuation: 11db
+
+  - platform: adc
+    name: Relay Supply Voltage
+    pin: GPIO33
+    attenuation: 11db
+    filters:
+      - multiply: 8
+
+  - platform: hlw8012
+    model: BL0937
+    sel_pin:
+      number: GPIO23
+      inverted: True
+    cf_pin: GPIO5
+    cf1_pin: GPIO18
+    change_mode_every: 2
+    update_interval: 1s
+    current_resistor: ${current_res}
+    voltage_divider: ${voltage_div}
+
+    current:
+      name: Current
+      accuracy_decimals: 3
+
+    voltage:
+      name: Voltage
+
+    power:
+      name: Power
+      id: power
+      on_value_range:
+        - above: 3600
+          then:
+            - switch.turn_off: relay
+
+  - platform: total_daily_energy
+    name: Total Daily Energy
+    power_id: power
+    filters:
+        - multiply: 0.001
+    unit_of_measurement: kWh
+
+status_led:
+  pin:
+    number: GPIO0
+    inverted: True
+
+# packages:
+#   base: !include
+#     file: ./.status-led.yaml

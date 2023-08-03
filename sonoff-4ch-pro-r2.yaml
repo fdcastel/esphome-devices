@@ -1,0 +1,68 @@
+#
+# Device-specific: Sonoff 4CH Pro R2
+#
+
+esp8266:
+  board: esp01_1m
+
+binary_sensor:
+  - name: Button 1
+    platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - switch.toggle: relay1
+
+  - name: Button 2
+    platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - switch.toggle: relay2
+
+  - name: Button 3
+    platform: gpio
+    pin:
+      number: GPIO10
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - switch.toggle: relay3
+
+  - name: Button 4
+    platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: True
+    on_click:
+      - switch.toggle: relay4
+
+switch:
+  - name: Relay 1
+    id: relay1
+    platform: gpio
+    pin: GPIO12
+
+  - name: Relay 2
+    id: relay2
+    platform: gpio
+    pin: GPIO05
+
+  - name: Relay 3
+    id: relay3
+    platform: gpio
+    pin: GPIO04
+
+  - name: Relay 4
+    id: relay4
+    platform: gpio
+    pin: GPIO15
+
+packages:
+  base: !include
+    file: ./.status-led.yaml

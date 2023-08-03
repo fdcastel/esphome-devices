@@ -1,0 +1,71 @@
+#
+# Device-specific: ESP32 dev board
+#
+# https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+#
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+web_server:
+  
+binary_sensor:
+  - name: BOOT Button
+    platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+
+  - name: D4 Button
+    platform: gpio
+    pin: 
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+
+switch:
+  - name: Scan BLE Devices
+    id: scan_ble
+    platform: template
+    icon: mdi:bluetooth-audio
+    optimistic: True
+
+    on_turn_on:
+      - esp32_ble_tracker.start_scan:
+
+    on_turn_off:
+      - esp32_ble_tracker.stop_scan:
+
+esp32_ble_tracker:
+  scan_parameters:
+    continuous: False
+
+  on_ble_advertise:
+    - then:
+      - lambda: |-
+          ESP_LOGD("ble_adv", "New BLE device");
+          ESP_LOGD("ble_adv", "  address: %s", x.address_str().c_str());
+          ESP_LOGD("ble_adv", "  name: %s", x.get_name().c_str());
+          ESP_LOGD("ble_adv", "  Advertised service UUIDs:");
+          for (auto uuid : x.get_service_uuids()) {
+              ESP_LOGD("ble_adv", "    - %s", uuid.to_string().c_str());
+          }
+          ESP_LOGD("ble_adv", "  Advertised service data:");
+          for (auto data : x.get_service_datas()) {
+              ESP_LOGD("ble_adv", "    - %s: (length %i)", data.uuid.to_string().c_str(), data.data.size());
+          }
+          ESP_LOGD("ble_adv", "  Advertised manufacturer data:");
+          for (auto data : x.get_manufacturer_datas()) {
+              ESP_LOGD("ble_adv", "    - %s: (length %i)", data.uuid.to_string().c_str(), data.data.size());
+          }
+
+packages:
+  base: !include
+    file: ./.status-led.yaml
+    vars:
+      status_led_output_platform: ledc
+      status_led_output_pin: GPIO2
+      status_led_output_inverted: "False"

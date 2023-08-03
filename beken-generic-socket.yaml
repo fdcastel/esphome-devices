@@ -1,0 +1,84 @@
+#
+# Device-specific: Beken Generic 16A Socket
+# 
+# Source: https://www.elektroda.com/rtvforum/topic3957163.html
+#
+
+bk72xx:
+  board: cb2s    # https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq
+  framework:
+    version: dev
+
+web_server:
+
+switch:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
+    id: relay
+    platform: gpio
+    pin: P26
+
+binary_sensor:
+  - name: Button
+    platform: gpio
+    pin:
+      number: P10
+      mode: INPUT_PULLUP
+      inverted: True
+    on_press:
+      - switch.toggle: relay
+
+# Required for total_daily_energy
+time:
+  - platform: homeassistant
+
+sensor:
+  - platform: hlw8012
+    model: BL0937
+    update_interval: 10s
+    voltage_divider: 784         # Default (2351) divided by 3.
+    change_mode_every: 1
+
+    sel_pin:    # https://esphome.io/components/sensor/hlw8012.html#sel-pin-inversion
+      number: P24
+      inverted: True
+    cf_pin: 
+      number: P7
+      inverted: True    # All pins must be inverted. Not just SEL.
+    cf1_pin:
+      number: P6
+      inverted: True    # All pins must be inverted. Not just SEL.
+
+    current:
+      name: Current
+      id: current
+      accuracy_decimals: 3
+      on_value_range:
+        - above: 8
+          then:
+            - logger.log:
+                format: "Overcurrent detected (%.1f A). Turning off relay."
+                args: 'id(current).state'
+                level: WARN
+            - switch.turn_off: relay
+
+    voltage:
+      name: Voltage
+      id: voltage
+
+    power:
+      name: Power
+      id: power
+
+  - platform: total_daily_energy
+    name: Total Daily Energy
+    power_id: power
+    filters:
+        - multiply: 0.001
+    unit_of_measurement: kWh
+
+packages:
+  base: !include
+    file: ./.status-led.yaml
+    vars:
+      status_led_output_platform: ledc
+      status_led_output_pin: P8

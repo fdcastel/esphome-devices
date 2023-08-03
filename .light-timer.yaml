@@ -1,0 +1,36 @@
+#
+# Adds auto turn off capability to a light after certain interval.
+#
+# Disables auto turn-off if turned OFF-ON within 2 seconds.
+#
+
+substitutions:
+  light_timer_interval: 5 min
+
+light:
+  # !extend is not documented -- https://github.com/esphome/issues/issues/4748
+  - id: !extend light_relay    # "light_relay" cannot be parameterized (ESPHome 2023.6)
+
+    on_turn_on:
+      if:
+        condition:
+          not:
+            script.is_running: script_turning_off
+        then:
+          - script.execute: script_turning_on
+
+    on_turn_off:
+      - script.stop: script_turning_on
+      - script.execute: script_turning_off
+
+script:
+  - id: script_turning_on
+    mode: restart
+    then:
+    - delay: ${light_timer_interval}
+    - light.turn_off: light_relay    
+
+  - id: script_turning_off
+    mode: restart
+    then:
+    - delay: 2s
