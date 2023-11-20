@@ -3,6 +3,8 @@
 # 
 # Source: https://www.elektroda.com/rtvforum/topic3957163.html
 #
+# Original Tuya Module Version: 1.1.8 - BK7231N / oem_bk7231n_plug
+# 
 
 bk72xx:
   board: cb2s    # https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq
