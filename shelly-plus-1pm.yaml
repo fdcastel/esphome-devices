@@ -39,7 +39,7 @@ binary_sensor:
     platform: gpio
     pin: GPIO04
     filters:
-      - delayed_on_off: 50ms
+      - delayed_on_off: 100ms
     on_state:
       - switch.toggle: relay
 
