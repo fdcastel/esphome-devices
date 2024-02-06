@@ -15,23 +15,23 @@ bk72xx:
 web_server:
 
 output:
-  - platform: ledc
+  - platform: libretiny_pwm
     id: red_output
     pin: P8
 
-  - platform: ledc
+  - platform: libretiny_pwm
     id: green_output
     pin: P7
 
-  - platform: ledc
+  - platform: libretiny_pwm
     id: blue_output
     pin: P6
 
-  - platform: ledc
+  - platform: libretiny_pwm
     id: warm_white_output
     pin: P24
 
-  - platform: ledc
+  - platform: libretiny_pwm
     id: cold_white_output
     pin: P26
 
