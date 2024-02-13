@@ -14,12 +14,21 @@ esphome:
   on_boot:
     priority: 800
     then:
-      - rtttl.play: two_short:d=4,o=5,b=100:16e6,16e6
+      - switch.turn_on: zigbee_rst
+      - delay: 15ms
+      - switch.turn_off: zigbee_rst
+      - delay: 1s
+      - light.turn_on: blue
+      - delay: 1s
+      - rtttl.play: 'long:d=1,o=5,b=100:e6' 
 
 web_server:
 
 logger:
-  baud_rate: 0
+  baud_rate: 0    # Disable
+
+api:
+  reboot_timeout: 0s    # Disable
 
 output:
   - id: status_bls
@@ -32,6 +41,14 @@ output:
     pin: GPIO4    # Buzzer
 
 light:
+  - id: blue
+    platform: status_led
+    pin: 
+      number: GPIO2
+      inverted: true
+    internal: True
+    restore_mode: ALWAYS_OFF
+
   - id: green
     platform: binary
     output: status_bls
@@ -43,12 +60,12 @@ rtttl:
 
 uart:
   id: uart_bus
-  tx_pin: GPIO19
   rx_pin: GPIO23
+  tx_pin: GPIO19
   baud_rate: 115200  
 
 stream_server:
-  port: 8888
+  port: 6638
   uart_id: uart_bus
 
 external_components:
@@ -62,16 +79,11 @@ binary_sensor:
     connected:
       name: Connected
 
-sensor:
-  - platform: stream_server
-    connection_count:
-      name: Connections
-
 switch:
   - platform: gpio
     id: zigbee_rst
     pin: 15
-    name: Zigbee RST
+    name: "Zigbee RST"
     inverted: True
     internal: True
     restore_mode: ALWAYS_OFF
@@ -79,20 +91,7 @@ switch:
   - platform: gpio
     id: zigbee_bsl
     pin: 22
-    name: Zigbee BSL
-    inverted: False
+    name: "Zigbee BSL"
+    inverted: True
     internal: True
     restore_mode: ALWAYS_OFF
-
-# esp32_ble_tracker:
-
-# text_sensor:
-#   - platform: ble_scanner
-#     name: BLE Devices
-
-packages:
-  base: !include
-    file: ./.status-led.yaml
-    vars:
-      status_led_output_platform: ledc
-      status_led_output_pin: GPIO2
