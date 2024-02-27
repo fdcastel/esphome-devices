@@ -1,0 +1,59 @@
+#
+# Device-specific: Tongou Rail Switch
+#
+# Sources: https://community.home-assistant.io/t/libretiny-esphome-tongou-rail-switch-configuration-tuya-bk7231n-cbu-module/600327
+#          https://community.home-assistant.io/t/tongou-din-electricity-monitors-wifi-model-to-q-sy1-jwt/598443
+#
+# Original Tuya Module Version: 1.0.2 - BK7231N
+# 
+
+bk72xx:
+  board: cbu    # https://developer.tuya.com/en/docs/iot/cbu-module-datasheet?id=Ka07pykl5dk4u
+  framework:
+    version: dev
+
+web_server:
+
+switch:
+  - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
+    id: relay_on
+    platform: gpio
+    pin:
+      number: P26
+      inverted: true
+    interlock: [relay_off]
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+    - switch.turn_off: relay_off
+    on_turn_off:
+    - switch.turn_on: relay_off
+
+  - name: relay_off
+    id: relay_off
+    platform: gpio
+    pin:
+      number: P24
+      inverted: true
+    internal: True
+    interlock: [relay_on]
+    restore_mode: ALWAYS_ON
+
+binary_sensor:
+  - name: Button
+    platform: gpio
+    pin: 
+      number: P17
+      inverted: true
+      mode:
+        input: true
+    on_press:
+      - switch.toggle: relay_on
+
+packages:
+  base: !include
+    file: ./.status-led.yaml
+    vars:
+      status_led_switch: relay_on
+      status_led_output_platform: libretiny_pwm
+      status_led_output_pin: P8    # ToDo: Not working. (tried: P8, P9, P15)
+      status_led_output_inverted: "True"
