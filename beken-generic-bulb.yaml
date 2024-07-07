@@ -13,6 +13,7 @@ bk72xx:
     version: dev
 
 web_server:
+  version: 3
 
 output:
   - platform: libretiny_pwm

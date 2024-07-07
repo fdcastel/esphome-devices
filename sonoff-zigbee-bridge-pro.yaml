@@ -23,6 +23,7 @@ esphome:
       - rtttl.play: 'long:d=1,o=5,b=100:e6' 
 
 web_server:
+  version: 3
 
 logger:
   baud_rate: 0    # Disable

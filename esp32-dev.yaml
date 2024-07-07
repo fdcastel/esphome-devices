@@ -10,7 +10,8 @@ esp32:
     type: arduino
 
 web_server:
-  
+  version: 3
+
 binary_sensor:
   - name: BOOT Button
     platform: gpio

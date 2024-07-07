@@ -12,6 +12,7 @@ bk72xx:
     version: dev
 
 web_server:
+  version: 3
 
 switch:
   - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
