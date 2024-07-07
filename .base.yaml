@@ -32,6 +32,7 @@ api:
 
 # Enable OTA updates
 ota:
+  platform: esphome
   password: !secret ota_password
 
 
@@ -44,11 +45,6 @@ sensor:
   - name: Wifi Signal
     platform: wifi_signal
     update_interval: 120s
-
-text_sensor:
-  - name: Version
-    platform: version
-    hide_timestamp: True
 
 
 # Restart button
