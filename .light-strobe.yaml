@@ -1,0 +1,48 @@
+#
+# Adds strobe capability to a light.
+#
+
+substitutions:
+  light_strobe_interval: 250 ms
+
+light:
+  - id: !extend light_relay
+    effects:
+      - strobe:
+          name: Strobe
+          colors:
+            - state: True
+              duration: ${light_strobe_interval}
+            - state: False
+              duration: ${light_strobe_interval}
+
+# Strobe button
+button:
+  - name: Strobe
+    platform: template
+    on_press:
+      then:
+        - if:
+            condition:
+              light.is_off: light_relay
+            then:
+              - light.turn_on: 
+                  id: light_relay
+                  effect: Strobe
+              - delay: ${light_strobe_interval}
+              - delay: ${light_strobe_interval}
+              - delay: ${light_strobe_interval}
+              - delay: ${light_strobe_interval}
+              - light.turn_off: 
+                  id: light_relay
+            else:
+              - light.turn_on: 
+                  id: light_relay
+                  effect: Strobe
+              - delay: ${light_strobe_interval}
+              - delay: ${light_strobe_interval}
+              - delay: ${light_strobe_interval}
+              - delay: ${light_strobe_interval}
+              - light.turn_on: 
+                  id: light_relay
+                  effect: None
