@@ -39,7 +39,7 @@ output:
 light:
   - name: None    # Uses device friendly name -- https://esphome.io/components/light/index.html#base-light-configuration
     platform: rgbww
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
     red: red_output
     green: green_output
