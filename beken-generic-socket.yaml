@@ -19,6 +19,7 @@ switch:
     id: relay
     platform: gpio
     pin: P26
+    restore_mode: RESTORE_DEFAULT_OFF
 
 binary_sensor:
   - name: Button
