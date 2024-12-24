@@ -6,6 +6,9 @@
 # Original Tuya Module Version: 1.1.8 - BK7231N / oem_bk7231n_plug
 # 
 
+substitutions:
+  power_cycle_interval: 10 s
+
 bk72xx:
   board: cb2s    # https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq
   framework:
@@ -79,6 +82,22 @@ sensor:
     filters:
         - multiply: 0.001
     unit_of_measurement: kWh
+
+# Power cycle button
+button:
+  - name: Power cycle
+    platform: template
+    on_press:
+      then:
+        - if:
+            condition:
+              switch.is_off: relay
+            then:
+              - switch.turn_on: relay
+            else:
+              - switch.turn_off: relay
+              - delay: ${power_cycle_interval}
+              - switch.turn_on: relay
 
 packages:
   base: !include
