@@ -84,6 +84,6 @@ packages:
   base: !include
     file: ./.status-led.yaml
     vars:
-      status_led_output_platform: ledc
+      status_led_output_platform: libretiny_pwm
       status_led_output_pin: P8
       status_led_switch: relay
