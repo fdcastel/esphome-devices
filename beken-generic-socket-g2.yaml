@@ -1,17 +1,15 @@
 #
-# Device-specific: Beken Generic 16A Socket
+# Device-specific: Beken Generic 16A Socket (2nd gen)
 # 
-# Source: https://www.elektroda.com/rtvforum/topic3957163.html
-#
-# Original Tuya Module Version: 1.1.8 - BK7231N / oem_bk7231n_plug
+# Original Tuya Module Version: 1.3.5 - BK7231T / oem_bk7231s_dltj
 # 
 
 substitutions:
   power_cycle_interval: 10 s
 
 bk72xx:
-  board: cb2s    # https://docs.libretiny.eu/boards/cb2s
-                 # https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq
+  board: wb2s    # https://docs.libretiny.eu/boards/wb2s/
+                 # https://developer.tuya.com/en/docs/iot/wb2s-module-datasheet?id=K9ghecl7kc479
   framework:
     version: dev
 
@@ -53,7 +51,7 @@ sensor:
       number: P7
       inverted: True    # All pins must be inverted. Not just SEL.
     cf1_pin:
-      number: P6
+      number: P8
       inverted: True    # All pins must be inverted. Not just SEL.
 
     current:
@@ -105,5 +103,5 @@ packages:
     file: ./.status-led.yaml
     vars:
       status_led_output_platform: libretiny_pwm
-      status_led_output_pin: P8
+      status_led_output_pin: P6
       status_led_switch: relay
