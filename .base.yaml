@@ -36,15 +36,15 @@ ota:
   password: !secret ota_password
 
 
-# Common sensors
-sensor:
-  - name: Uptime
-    platform: uptime
-    update_interval: 120s
+# Common sensors (redundant for Unifi systems)
+# sensor:
+#   - name: Uptime
+#     platform: uptime
+#     update_interval: 120s
 
-  - name: Wifi Signal
-    platform: wifi_signal
-    update_interval: 120s
+#   - name: Wifi Signal
+#     platform: wifi_signal
+#     update_interval: 120s
 
 
 # Restart button
