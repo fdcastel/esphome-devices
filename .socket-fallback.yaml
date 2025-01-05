@@ -1,0 +1,16 @@
+#
+# Fallback option for always-on devices.
+#
+
+substitutions:
+  socket_fallback_interval: 2 min
+  socket_fallback_switch: relay
+
+interval:
+  - interval: ${socket_fallback_interval}
+    then:
+      - if:
+          condition:
+            switch.is_off: ${socket_fallback_switch}
+          then:
+            - switch.turn_on: ${socket_fallback_switch}
