@@ -4,6 +4,7 @@
 
 substitutions:
   light_restore_mode: ALWAYS_OFF
+  switch_delay: 100ms
 
 esp8266:
   board: esp01_1m
@@ -33,7 +34,7 @@ binary_sensor:
     platform: gpio
     pin: GPIO04
     filters:
-      - delayed_on_off: 100ms
+      - delayed_on_off: ${switch_delay}
     on_state:
       - light.toggle: light_relay
 
