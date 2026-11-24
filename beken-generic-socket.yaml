@@ -43,7 +43,7 @@ sensor:
   - platform: hlw8012
     model: BL0937
     update_interval: 10s
-    voltage_divider: 784         # Default (2351) divided by 3.
+    voltage_divider: 1568        # Measured on ESPHome 2026.11+ (each BL0937 pulse counted once, esphome#21271). Was 784 when pulses were double-counted.
     change_mode_every: 1
 
     sel_pin:    # https://esphome.io/components/sensor/hlw8012.html#sel-pin-inversion
