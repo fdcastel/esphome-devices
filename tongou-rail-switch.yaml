@@ -5,56 +5,83 @@
 #          https://community.home-assistant.io/t/tongou-din-electricity-monitors-wifi-model-to-q-sy1-jwt/598443
 #
 # Original Tuya Module Version: 1.0.2 - BK7231N
-# 
+#
+# The relay is a magnetic latching (bistable) relay with an ON coil (P26) and an OFF coil (P24).
+# It holds its position without power, so each coil only gets a short pulse, and a reboot of
+# the module leaves the load alone. (This template used to keep one coil energized all the time
+# and forced the relay OFF at every boot: the bench lost power whenever the module rebooted.)
+#
 
 bk72xx:
   board: cbu    # https://developer.tuya.com/en/docs/iot/cbu-module-datasheet?id=Ka07pykl5dk4u
-  framework:
-    version: dev
 
 web_server:
   version: 3
 
 switch:
   - name: None    # Uses device friendly name -- https://esphome.io/components/switch/#base-switch-configuration
-    id: relay_on
+    id: relay
+    platform: template
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON    # After a reboot or power loss: the last state (ON if none saved)
+    turn_on_action:
+      - switch.turn_on: coil_on
+    turn_off_action:
+      - switch.turn_on: coil_off
+
+  - id: coil_on
     platform: gpio
     pin:
       number: P26
       inverted: true
-    interlock: [relay_off]
+    internal: True
+    interlock: [coil_off]
     restore_mode: ALWAYS_OFF
     on_turn_on:
-    - switch.turn_off: relay_off
-    on_turn_off:
-    - switch.turn_on: relay_off
+      - delay: 100ms
+      - switch.turn_off: coil_on
 
-  - name: relay_off
-    id: relay_off
+  - id: coil_off
     platform: gpio
     pin:
       number: P24
       inverted: true
     internal: True
-    interlock: [relay_on]
-    restore_mode: ALWAYS_ON
+    interlock: [coil_on]
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - delay: 100ms
+      - switch.turn_off: coil_off
 
 binary_sensor:
   - name: Button
     platform: gpio
-    pin: 
+    pin:
       number: P17
       inverted: true
       mode:
         input: true
     on_press:
-      - switch.toggle: relay_on
+      - switch.toggle: relay
+
+# Why did it restart? (diagnostics)
+debug:
+
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: Reset Reason
+
+sensor:
+  - platform: uptime
+    name: Uptime
+    update_interval: 60s
 
 packages:
   base: !include
     file: ./.status-led.yaml
     vars:
-      status_led_switch: relay_on
+      status_led_switch: relay
       status_led_output_platform: libretiny_pwm
       status_led_output_pin: P8    # ToDo: Not working. (tried: P8, P9, P15)
       status_led_output_inverted: "True"
