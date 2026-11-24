@@ -1,0 +1,31 @@
+#
+# Device-specific: Sonoff Zigbee Bridge PRO, ESPHome serial proxy (ESPHome 2026.3+, HA 2026.11+).
+#
+# ZHA opens the radio through the device's encrypted native API: add ZHA (or migrate its radio)
+# and pick the "Zigbee" serial port of this device (radio type znp, 115200). No TCP port is
+# left open. serial_proxy is still EXPERIMENTAL in ESPHome.
+#
+# The RTS line drives the CC2652P reset, wired like a USB coordinator stick, so ZHA resets the
+# radio when it connects. Radio firmware updates need the TCP transport
+# (sonoff-zigbee-bridge-pro.yaml): cc2538-bsl cannot reach a serial proxy.
+#
+
+packages:
+  core: !include .sonoff-zigbee-bridge-pro-core.yaml
+
+# GPIO15 is shared by the core's reset switch and the proxy's RTS line.
+switch:
+  - id: !extend zigbee_rst
+    pin:
+      number: GPIO15
+      allow_other_uses: true
+
+serial_proxy:
+  - id: zb_proxy
+    uart_id: uart_bus
+    name: Zigbee
+    port_type: TTL
+    rts_pin:    # RTS asserted = CC2652P held in reset
+      number: GPIO15
+      inverted: true
+      allow_other_uses: true

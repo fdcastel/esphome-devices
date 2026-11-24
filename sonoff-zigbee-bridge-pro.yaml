@@ -1,72 +1,17 @@
 #
-# Device-specific: Sonoff Zigbee Bridge PRO
+# Device-specific: Sonoff Zigbee Bridge PRO, raw serial over TCP.
 #
-# Source: https://github.com/Giancky79/ZB-Bridge-P
-#         https://templates.blakadder.com/sonoff_ZBBridge-P.html
+# ZHA connects to `socket://<host>:6638` (radio type znp, 115200). This is also the transport
+# for radio firmware updates: press "Zigbee Bootloader", then run cc2538-bsl against the same
+# socket. ESPHome's native alternative is sonoff-zigbee-bridge-pro-proxy.yaml.
+#
+# Built-in uart_tcp (ESPHome 2026.10+) replaces oxan/esphome-stream-server, whose master no
+# longer compiles (network::get_use_address() was removed in ESPHome 2026.7).
 #
 
-esp32:
-  board: esp32dev
-  framework:
-    type: arduino
+packages:
+  core: !include .sonoff-zigbee-bridge-pro-core.yaml
 
-esphome:
-  on_boot:
-    priority: 800
-    then:
-      - switch.turn_on: zigbee_rst
-      - delay: 15ms
-      - switch.turn_off: zigbee_rst
-      - delay: 1s
-      - light.turn_on: blue
-      - delay: 1s
-      - rtttl.play: 'long:d=1,o=5,b=100:e6' 
-
-web_server:
-  version: 3
-
-logger:
-  baud_rate: 0    # Disable
-
-api:
-  reboot_timeout: 0s    # Disable
-
-output:
-  - id: status_bls
-    platform: gpio
-    pin: GPIO21    # Green led
-    inverted: True    
-
-  - id: rtttl_out 
-    platform: ledc
-    pin: GPIO4    # Buzzer
-
-light:
-  - id: blue
-    platform: status_led
-    pin: 
-      number: GPIO2
-      inverted: true
-    internal: True
-    restore_mode: ALWAYS_OFF
-
-  - id: green
-    platform: binary
-    output: status_bls
-    internal: True
-    restore_mode: ALWAYS_OFF
-
-rtttl:
-  output: rtttl_out
-
-uart:
-  id: uart_bus
-  rx_pin: GPIO23
-  tx_pin: GPIO19
-  baud_rate: 115200  
-
-# Built-in serial-over-TCP (ESPHome 2026.10+) replaces oxan/esphome-stream-server, whose
-# master no longer compiles (network::get_use_address() was removed in ESPHome 2026.7).
 uart_tcp:
   - id: zb_tcp
     uart_id: uart_bus
@@ -74,27 +19,13 @@ uart_tcp:
     port: 6638
 
 binary_sensor:
-  - platform: status
-    name: Status
-
   - platform: uart_tcp
     uart_tcp_id: zb_tcp
     connected:
       name: Connected
 
-switch:
-  - platform: gpio
-    id: zigbee_rst
-    pin: 15
-    name: "Zigbee RST"
-    inverted: True
-    internal: True
-    restore_mode: ALWAYS_OFF
-
-  - platform: gpio
-    id: zigbee_bsl
-    pin: 22
-    name: "Zigbee BSL"
-    inverted: True
-    internal: True
-    restore_mode: ALWAYS_OFF
+sensor:
+  - platform: uart_tcp
+    uart_tcp_id: zb_tcp
+    disconnects:
+      name: Disconnects

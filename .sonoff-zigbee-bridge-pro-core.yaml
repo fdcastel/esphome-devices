@@ -1,0 +1,124 @@
+#
+# Sonoff Zigbee Bridge PRO (ZBBridge-P): the hardware, shared by both transports.
+#   ESP32 + TI CC2652P running Z-Stack (ZNP coordinator) on a 115200 UART.
+#   Devices include a transport, not this file:
+#     sonoff-zigbee-bridge-pro.yaml        raw serial over TCP, port 6638 (ZHA `socket://`)
+#     sonoff-zigbee-bridge-pro-proxy.yaml  ESPHome serial_proxy (ZHA over the native API)
+#
+# Source: https://templates.blakadder.com/sonoff_ZBBridge-P.html
+#         Tasmota tasmota/berry/zigbee/cc2652_flasher.be (pins, bootloader sequence)
+#
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+esphome:
+  on_boot:
+    priority: 800
+    then:
+      - script.execute: zigbee_reset
+      - delay: 1s
+      - light.turn_on: blue
+      - delay: 1s
+      - rtttl.play: 'long:d=1,o=5,b=100:e6'
+
+web_server:
+  version: 3
+
+logger:
+  baud_rate: 0    # Disable
+
+api:
+  reboot_timeout: 0s    # Never reboot the coordinator just because Home Assistant is away
+
+output:
+  - id: status_bls
+    platform: gpio
+    pin: GPIO21    # Green led
+    inverted: True
+
+  - id: rtttl_out
+    platform: ledc
+    pin: GPIO4    # Buzzer
+
+light:
+  - id: blue
+    platform: status_led
+    pin:
+      number: GPIO2
+      inverted: true
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+  - id: green
+    platform: binary
+    output: status_bls
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+rtttl:
+  output: rtttl_out
+
+uart:
+  id: uart_bus
+  rx_pin: GPIO23
+  tx_pin: GPIO19
+  baud_rate: 115200
+  rx_buffer_size: 1024    # Headroom for Zigbee bursts between loop passes (default 256)
+
+binary_sensor:
+  - platform: status
+    name: Status
+
+# CC2652P control lines. Both are active low; "on" asserts the line.
+switch:
+  - platform: gpio
+    id: zigbee_rst
+    pin: GPIO15
+    name: "Zigbee RST"
+    inverted: True
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    id: zigbee_bsl
+    pin: GPIO22
+    name: "Zigbee BSL"
+    inverted: True
+    internal: True
+    restore_mode: ALWAYS_OFF
+
+script:
+  # Normal start: BSL released, 15 ms reset pulse.
+  - id: zigbee_reset
+    then:
+      - switch.turn_off: zigbee_bsl
+      - switch.turn_on: zigbee_rst
+      - delay: 15ms
+      - switch.turn_off: zigbee_rst
+
+  # Start the CC2652P in its ROM serial bootloader (Tasmota's sequence): hold BSL low across a
+  # 10 ms reset. BSL stays low until "Zigbee Reset"; the bootloader then waits for the 0x55 0x55
+  # sync, e.g. `cc2538-bsl.py -p socket://<host>:6638 ...` over the TCP transport.
+  - id: zigbee_bootloader
+    then:
+      - switch.turn_on: zigbee_bsl
+      - switch.turn_on: zigbee_rst
+      - delay: 10ms
+      - switch.turn_off: zigbee_rst
+
+button:
+  - platform: template
+    name: Zigbee Reset
+    entity_category: config
+    on_press:
+      - script.execute: zigbee_reset
+
+  - platform: template
+    name: Zigbee Bootloader
+    entity_category: config
+    disabled_by_default: true    # Only for radio firmware updates
+    on_press:
+      - script.execute: zigbee_bootloader
