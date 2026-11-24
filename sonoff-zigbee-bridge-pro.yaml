@@ -65,18 +65,20 @@ uart:
   tx_pin: GPIO19
   baud_rate: 115200  
 
-stream_server:
-  port: 6638
-  uart_id: uart_bus
-
-external_components:
-  - source: github://oxan/esphome-stream-server
+# Built-in serial-over-TCP (ESPHome 2026.10+) replaces oxan/esphome-stream-server, whose
+# master no longer compiles (network::get_use_address() was removed in ESPHome 2026.7).
+uart_tcp:
+  - id: zb_tcp
+    uart_id: uart_bus
+    role: server
+    port: 6638
 
 binary_sensor:
   - platform: status
     name: Status
 
-  - platform: stream_server
+  - platform: uart_tcp
+    uart_tcp_id: zb_tcp
     connected:
       name: Connected
 
